@@ -2,8 +2,6 @@ package com.geppetto.Javaproject.controller;
 
 import com.geppetto.Javaproject.dto.UserDto;
 import com.geppetto.Javaproject.service.UserService;
-import java.util.List;
-import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
@@ -65,14 +63,6 @@ public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
     log.info("Enter into createUser method");
     ResponseEntity<UserDto> response =  ResponseEntity.status(HttpStatus.OK).body(userService.createUser(userDto));
     log.info("Exit from createUser method");
-    return response;
-}
-
-@GetMapping("/search")
-public ResponseEntity<List<UserDto>> searchUser(@RequestParam Map<String, String> allParams) {
-    log.info("Enter into searchUser method");
-    ResponseEntity<List<UserDto>> response = ResponseEntity.status(HttpStatus.OK).body(userService.searchUser(allParams));
-    log.info("Exit from searchUser method");
     return response;
 }
 

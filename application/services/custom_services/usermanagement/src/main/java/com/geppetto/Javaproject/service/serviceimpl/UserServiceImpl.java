@@ -13,9 +13,6 @@ import org.springframework.data.domain.Pageable;
 import com.geppetto.Javaproject.util.ConstructQuery;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.BasicQuery;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,12 +34,10 @@ public class UserServiceImpl implements UserService {
      * @param mongoTemplate The MongoTemplate for interacting with MongoDB.
      */
   private final UserDao userDao;
-  private final MongoTemplate mongoTemplate;
   private final ConstructQuery constructQuery;
 
-  public UserServiceImpl(UserDao  userDao, MongoTemplate mongoTemplate, ConstructQuery constructQuery) {
+  public UserServiceImpl(UserDao  userDao, ConstructQuery constructQuery) {
     this. userDao =  userDao;
-    this.mongoTemplate = mongoTemplate;
     this.constructQuery = constructQuery;
   }
     
@@ -122,27 +117,7 @@ public class UserServiceImpl implements UserService {
   return userDto;
   }
     
-    /**
-     * Searches for user based on provided parameters.
-     *
-     * @param allParams A map of search parameters.
-     * @return A list of {@link UserDto} matching the search parameters.
-     */
-  @Override
-  public List<UserDto>  searchUser(Map<String, String> allParams) {
-    log.info("Enter into searchUser method");
-    String queryString = constructQuery.constructQueries(allParams);
-  Query query = new BasicQuery(queryString);
-  List<UserDto> results = mongoTemplate.find(query, User.class).stream()
-    .map(user -> {
-      UserDto userDto = UserDto.builder().build();
-      BeanUtils.copyProperties(user, userDto);
-      return userDto;
-      })
-      .collect(Collectors.toList());
-  log.info("Exit from searchUser method");
-  return results;
-  }
+
     
     /**
      * Updates existing user.

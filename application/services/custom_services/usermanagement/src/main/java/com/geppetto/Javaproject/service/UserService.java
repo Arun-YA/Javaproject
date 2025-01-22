@@ -15,8 +15,6 @@ public interface UserService {
 
     UserDto  createUser(UserDto userDto);
 
-    List<UserDto>  searchUser(Map<String, String> allParams);
-
     UserDto  updateUser(UserDto userDto);
 
 }

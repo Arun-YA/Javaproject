@@ -12,18 +12,18 @@ services:
       - 5500:5500
       - 1521:1521
     volumes:
-      - ./scripts/startup:/opt/oracle/scripts/startup
+      - ../scripts/oracle-startup:/opt/oracle/scripts/startup
       - javaproject_2523-volume:/opt/oracle/oradata
     networks:
       - javaproject_2523_net
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: 0.0.0.0:24224
-        fluentd-async-connect: "true"
-        tag: fluent
-    mem_limit: 300m
-    mem_reservation: 150m
+    # logging:
+    #   driver: "fluentd"
+    #   options:
+    #     fluentd-address: 0.0.0.0:24224
+    #     fluentd-async-connect: "true"
+    #     tag: fluent
+    mem_limit: 4g
+    mem_reservation: 2g
     cpus: 0.2
 
 
