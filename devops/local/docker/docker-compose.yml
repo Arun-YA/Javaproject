@@ -1,0 +1,129 @@
+version: "3.8"
+services:
+
+  oracle:
+    image: decoders10/oracle19c:19.3.0-ee-v1
+    container_name: oracle-2523
+    environment:
+      - ORACLE_PWD=password
+      - ORACLE_USER=sys
+      - ORACLE_PDB=orclpdb1
+    ports:
+      - 5500:5500
+      - 1521:1521
+    volumes:
+      - ./scripts/startup:/opt/oracle/scripts/startup
+      - javaproject_2523-volume:/opt/oracle/oradata
+    networks:
+      - javaproject_2523_net
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 0.0.0.0:24224
+        fluentd-async-connect: "true"
+        tag: fluent
+    mem_limit: 300m
+    mem_reservation: 150m
+    cpus: 0.2
+
+
+
+  vault:
+    image: vault:1.13.3
+    container_name: vault-2523
+    ports:
+      - "8200:8200"
+    environment:
+        VAULT_SERVER: "http://127.0.0.1:8200"
+        VAULT_DEV_ROOT_TOKEN_ID: vault-geppetto-2021
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - javaproject_2523_net
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 0.0.0.0:24224
+        fluentd-async-connect: "true"
+        tag: fluent
+    mem_limit: 300m
+    mem_reservation: 150m
+    cpus: 0.2
+
+  elasticsearch:
+    image: elasticsearch:8.13.0
+    container_name: elasticsearch-2523
+    restart: always
+    environment:
+      - cluster.name=elasticsearch
+      - node.name=elasticsearch
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - network.host=0.0.0.0
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.enabled=false
+      - xpack.watcher.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
+        hard: 262144
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    expose:
+      - 9200
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    networks:
+      - javaproject_2523_net
+
+  kibana:
+    image: kibana:8.13.0
+    container_name: kibana-2523
+    restart: always
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    networks:
+      - javaproject_2523_net
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+
+  
+
+  usermanagement:
+    build: ../../../application/services/custom_services/usermanagement
+    image: usermanagement-2523
+    container_name: usermanagement-2523
+    ports:
+      - 8011:8011
+    env_file: .env
+    depends_on:
+      - oracle
+    networks:
+      - javaproject_2523_net
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 0.0.0.0:24224
+        fluentd-async-connect: "true"
+        tag: fluent
+    mem_limit: 300m
+    mem_reservation: 150m
+    cpus: 0.2
+
+
+volumes:
+  javaproject_2523-volume:
+    driver: local
+  elasticsearch:
+networks:
+  javaproject_2523_net:
+    external: true
